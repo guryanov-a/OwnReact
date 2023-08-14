@@ -25,12 +25,16 @@ import updateInstance from './updateInstance';
 export function reconcile(parentDom, prevInstance, element) {
     // choosing what to do with the instance
     if (prevInstance === null) {
+        // initial render
         return createInstance(parentDom, element);
     } else if (element === null) {
+        // clean up after removing
         return removeInstance(prevInstance);
     } else if (prevInstance.element.type === element.type || typeof element.type === 'string') {
+        // update instance in case of minor changes or if the element for the update is simple
         return updateInstance(prevInstance, element);
     } else {
+        // recreating subtree
         return replaceInstance(prevInstance, element);
     }
 }

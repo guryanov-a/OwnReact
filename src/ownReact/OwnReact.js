@@ -1,5 +1,3 @@
-let count = 0
-
 let rootInstance = null;
 
 export default class OwnReact {

@@ -9,9 +9,6 @@ import instantiate from './instanciate';
  * @todo
  * - [ ] test
  * 
- * @example
- * const instance = createInstance(container, element);
- * 
  * @see https://reactjs.org/docs/reconciliation.html#mounting-components
  * @see https://reactjs.org/docs/react-component.html#constructor
  * @see https://reactjs.org/docs/react-component.html#componentdidmount
@@ -22,8 +19,8 @@ import instantiate from './instanciate';
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export default function createInstance(container, element) {
-    const { type, props } = element;
-    const instance = instantiate(type, props);
+    const instance = instantiate(element);
     container.appendChild(instance.dom);
+    
     return instance;
 }
