@@ -1,9 +1,8 @@
 /**
- * Create instance of a component
+ * Create public instance of a component
  * @param {Object} element
- * @returns {Object} instance
- * @example
- * const instance = createInstance(element);
+ * @param {Object} internalInstance
+ * @returns {Object} publicInstance
  * 
  * @todo
  * - [ ] implement
@@ -17,8 +16,8 @@
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export default function createPublicInstance(element, internalInstance) {
-    const { type: Type, props } = element;
-    const publicInstance = new Type(props);
+    const { type: ClassComponent, props } = element;
+    const publicInstance = new ClassComponent(props);
     publicInstance.__internalInstance = internalInstance;
     return publicInstance;
 }

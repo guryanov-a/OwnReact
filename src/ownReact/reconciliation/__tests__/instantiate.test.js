@@ -1,55 +1,107 @@
-import instantiate from "../instantiate";
+import OwnReactComponent from '../../OwnReact';
+import instantiate from '../instantiate';
+import updateDomProperties from '../updateDomProperties';
+import createPublicInstance from '../createPublicInstance';
+
+jest.mock('../updateDomProperties');
+updateDomProperties.mockImplementation((domElement) => domElement);
+jest.mock('../createPublicInstance');
+
+const id = (x) => x;
+
+const transformInstanceHtmlElement = (instance) => {
+    const { dom, childInstances = [] } = instance;
+
+    const transformedChildInstances = childInstances.map(transformInstanceHtmlElement);
+    const { tagName = 'no tag name' } = dom;
+    const attributes = {};
+
+    const transformedInstance = [
+        tagName.toLowerCase(),
+        attributes,
+        transformedChildInstances,
+    ];
+    return transformedInstance;
+};
+
+const transformInstanceTextElement = (instance) => {
+    const { dom } = instance;
+    
+    const transformedInstance = [
+        'TEXT ELEMENT',
+        {
+            nodeValue: dom.nodeValue,
+        },
+        []
+    ];
+    return transformedInstance;
+};
 
 describe("instantiate", () => {
-    // - [ ] instantiate a DOM element
-    test('instantiate a DOM element', () => {
-        // given
+    test('instantiate a DOM element: HTML element', () => {
+        updateDomProperties.mockImplementation(id);
+                    
         const element = {
             type: 'div',
             props: {
-                className: 'foo',
                 children: [
                     {
-                        type: 'TEXT ELEMENT',
-                        props: { nodeValue: 'bar' },
+                        type: 'span',
                     },
+                    {
+                        type: 'i',
+                    }
                 ],
             },
         };
 
-        // when
         const instance = instantiate(element);
+        const transformedInstance = transformInstanceHtmlElement(instance);
 
-        // then
-        const expectedInstance = {
-            dom: {
-                className: 'foo',
-                children: [
-                    {
-                        nodeValue: 'bar',
-                    },
-                ],
-            },
-            element,
-            childInstances: [
-                {
-                    dom: {
-                        nodeValue: 'bar',
-                    },
-                    element: {
-                        type: 'TEXT ELEMENT',
-                        props: { nodeValue: 'bar' },
-                    },
-                    childInstances: [],
-                },
+        const expectedInstance = [
+            'div',
+            {},
+            [
+                ['span', {}, []],
+                ['i', {}, []],
             ],
-        };
-        expect(instance).toEqual(expectedInstance);
+        ];
+        expect(transformedInstance).toEqual(expectedInstance);
     });
 
-    // - [ ] instantiate a class component
+    test('instantiate a DOM element: text', () => {
+        updateDomProperties.mockImplementation(id);
+
+        const element = {
+            type: 'TEXT ELEMENT',
+            props: { nodeValue: 'foo' },
+        }
+
+        const instance = instantiate(element);
+        const transformedInstance = transformInstanceTextElement(instance);
+
+        const expectedInstance = [
+            'TEXT ELEMENT',
+            {
+                nodeValue: 'foo',
+            },
+            [],
+        ];
+        expect(transformedInstance).toEqual(expectedInstance);
+    });
+
     test('instantiate a class component', () => {
-        // given
+        createPublicInstance.mockImplementation((element, instance) => {
+            const { type: ClassComponent } = element;
+            classInstance = new ClassComponent();
+            classInstance.props = {};
+            classInstance.state = {};
+            classInstance.__internalInstance = {};
+            classInstance.isOwnReactComponent = () => true;
+            return classInstance;
+        });
+        updateDomProperties.mockImplementation(id);
+        
         class Component {
             render() {
                 return {
@@ -58,28 +110,27 @@ describe("instantiate", () => {
                 };
             }
         }
+
+        Component.setPrototypeOf();
+
         const element = {
             type: Component,
-            props: {},
         };
 
-        // when
         const instance = instantiate(element);
+        const transformedInstance = transformInstanceTextElement(instance);
 
-        // then
-        const expectedInstance = {
-            dom: {
+        const expectedInstance = [
+            'TEXT ELEMENT',
+            {
                 nodeValue: 'foo',
             },
-            element,
-            childInstances: [],
-        };
-        expect(instance).toEqual(expectedInstance);
+            [],
+        ];
+        expect(transformedInstance).toEqual(expectedInstance);
     });
 
-    // - [ ] instantiate a function component
     test('instantiate a function component', () => {
-        // given
         const element = {
             type: () => {
                 return {
@@ -90,39 +141,16 @@ describe("instantiate", () => {
             props: {},
         };
 
-        // when
         const instance = instantiate(element);
+        const transformedInstance = transformInstanceTextElement(instance);
 
-        // then
-        const expectedInstance = {
-            dom: {
+        const expectedInstance = [
+            'TEXT ELEMENT',
+            {
                 nodeValue: 'foo',
             },
-            element,
-            childInstances: [],
-        };
-        expect(instance).toEqual(expectedInstance);
-    });
-
-    // - [ ] instantiate a text element
-    test('instantiate a text element', () => {
-        // given
-        const element = {
-            type: 'TEXT ELEMENT',
-            props: { nodeValue: 'foo' },
-        };
-
-        // when
-        const instance = instantiate(element);
-
-        // then
-        const expectedInstance = {
-            dom: {
-                nodeValue: 'foo',
-            },
-            element,
-            childInstances: [],
-        };
-        expect(instance).toEqual(expectedInstance);
+            [],
+        ];
+        expect(transformedInstance).toEqual(expectedInstance);
     });
 });

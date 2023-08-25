@@ -1,5 +1,6 @@
 import updateDomProperties from './updateDomProperties.js';
 import createPublicInstance from './createPublicInstance.js';
+import OwnReactComponent from '../OwnReact.js';
 
 /**
  * Instantiate a component
@@ -20,17 +21,15 @@ import createPublicInstance from './createPublicInstance.js';
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export default function instantiate(element) {
-    const { type, props } = element;
+    const { type = 'null', props = {} } = element;
     const isDomElement = typeof type === 'string';
-    const isClassElement = !!type.prototype;
-    const isFunctionElement = typeof type === 'function';
     
     if (isDomElement) {
         // create DOM element
         const isTextElement = type === 'TEXT ELEMENT';
-        const dom = isTextElement ? document.createTextNode('') : document.createElement(type);
+        const domElement = isTextElement ? document.createTextNode(element.props.nodeValue) : document.createElement(type);
 
-        updateDomProperties(dom, [], props);
+        const dom = updateDomProperties(domElement, [], props);
 
         const children = props.children || [];
         const childInstances = children.map(instantiate);
@@ -43,12 +42,15 @@ export default function instantiate(element) {
             childInstances,
         };
         return instance;
-    } else if (isClassElement) {
+    } 
+
+    const isClassElement = OwnReactComponent.prototype.isPrototypeOf(type.prototype);
+    if (isClassElement) {
         // create instance of a component
         const instance = {};
         const publicInstance = createPublicInstance(element, instance);
         const childElement = publicInstance.render();
-        const childInstance = instantiate(childElement.type, childElement.props);
+        const childInstance = instantiate(childElement);
         const dom = childInstance.dom;
 
         Object.assign(instance, {
@@ -57,12 +59,15 @@ export default function instantiate(element) {
             childInstance,
             publicInstance,
         });
-
         return instance;
-    } else if (isFunctionElement) {
+    } 
+
+    const isFunctionElement = typeof type === 'function';
+    if (isFunctionElement) {
+        const { type: functionComponent } = element;
         // create instance of a function component
-        const childElement = type(props);
-        const childInstance = instantiate(childElement.type, childElement.props);
+        const childElement = functionComponent(props);
+        const childInstance = instantiate(childElement);
         const dom = childInstance.dom;
 
         const instance = {
@@ -71,7 +76,7 @@ export default function instantiate(element) {
             childInstance,
         };
         return instance;
-    } else {
-        throw new Error(`Invalid type: "${type}".`);
     }
+
+    throw new Error(`Invalid type: "${type}".`);
 }

@@ -1,4 +1,4 @@
-import instantiate from './instanciate';
+import instantiate from './instantiate';
 
 /**
  * Creates instance of a DOM element

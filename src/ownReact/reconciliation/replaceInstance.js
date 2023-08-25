@@ -1,4 +1,4 @@
-import createInstance from '../createInstance.js';
+import createInstance from './createInstance';
 
 /**
  * Replaces a DOM node with a new instance.
