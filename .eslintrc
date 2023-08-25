@@ -8,7 +8,7 @@
   },
   "settings": {
     "react": {
-      "pragma": "OwnReact"
+      "pragma": "OwnReactComponent"
     }
   },
   "rules": {

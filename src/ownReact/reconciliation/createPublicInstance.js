@@ -4,12 +4,6 @@
  * @param {Object} internalInstance
  * @returns {Object} publicInstance
  * 
- * @todo
- * - [ ] implement
- * - [ ] test
- * - [ ] document
- * - [ ] add to CHANGELOG.md
- * 
  * @see https://reactjs.org/docs/reconciliation.html#mounting-components
  * @see https://reactjs.org/docs/react-component.html#constructor
  * @see https://reactjs.org/docs/react-component.html#componentdidmount

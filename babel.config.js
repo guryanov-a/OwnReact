@@ -4,7 +4,7 @@ module.exports = {
     [
       "@babel/preset-react",
       {
-        pragma: "OwnReact.createElement"
+        pragma: "OwnReactComponent.createElement"
       }
     ]
   ]

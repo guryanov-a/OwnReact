@@ -1,15 +1,12 @@
 import updateDomProperties from './updateDomProperties.js';
 import createPublicInstance from './createPublicInstance.js';
-import OwnReactComponent from '../OwnReact.js';
+import OwnReactComponent from '../OwnReactComponent.js';
 
 /**
  * Instantiate a component
  * @param {Function} type
  * @param {Object} props
  * @returns {Object} instance
- * 
- * @todo
- * - [ ] test
  * 
  * @see https://reactjs.org/docs/reconciliation.html#mounting-components
  * @see https://reactjs.org/docs/react-component.html#constructor
@@ -21,9 +18,14 @@ import OwnReactComponent from '../OwnReact.js';
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export default function instantiate(element) {
-    const { type = 'null', props = {} } = element;
+    if (!element || !element.type) {
+        console.error(`Invalid input: ${element}`);
+        return;
+    }
+
+    const { type, props = {} } = element;
     const isDomElement = typeof type === 'string';
-    
+
     if (isDomElement) {
         // create DOM element
         const isTextElement = type === 'TEXT ELEMENT';
@@ -42,9 +44,9 @@ export default function instantiate(element) {
             childInstances,
         };
         return instance;
-    } 
+    }
 
-    const isClassElement = type.prototype instanceof OwnReactComponent;
+    const isClassElement = !!type.isOwnReactComponent;
     if (isClassElement) {
         // create instance of a component
         const instance = {};
@@ -53,30 +55,28 @@ export default function instantiate(element) {
         const childInstance = instantiate(childElement);
         const dom = childInstance.dom;
 
-        Object.assign(instance, {
+        return {
+            ...instance,
             dom,
             element,
             childInstance,
             publicInstance,
-        });
-        return instance;
+        };
     } 
 
     const isFunctionElement = typeof type === 'function';
     if (isFunctionElement) {
-        const { type: functionComponent } = element;
-        // create instance of a function component
-        const childElement = functionComponent(props);
+        const { type: FunctionComponent } = element;
+        const childElement = FunctionComponent(props);
         const childInstance = instantiate(childElement);
         const dom = childInstance.dom;
 
-        const instance = {
+        return {
             dom,
             element,
             childInstance,
         };
-        return instance;
     }
 
-    throw new Error(`Invalid type: "${type}".`);
+    console.error(`Invalid type: "${type} or extends for class component is not used".`);
 }

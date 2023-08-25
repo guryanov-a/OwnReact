@@ -1,8 +1,8 @@
-import OwnReact from "./ownReact/OwnReact";
+import OwnReactComponent from "./ownReact/OwnReactComponent";
 import App from "./app/App";
 
 const root = document.getElementById("root");
 
 // eslint-disable-next-line react/no-deprecated
-OwnReact.render(App, root);
+OwnReactComponent.render(App, root);
 
