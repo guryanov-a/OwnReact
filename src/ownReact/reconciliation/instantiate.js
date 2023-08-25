@@ -44,7 +44,7 @@ export default function instantiate(element) {
         return instance;
     } 
 
-    const isClassElement = OwnReactComponent.prototype.isPrototypeOf(type.prototype);
+    const isClassElement = type.prototype instanceof OwnReactComponent;
     if (isClassElement) {
         // create instance of a component
         const instance = {};

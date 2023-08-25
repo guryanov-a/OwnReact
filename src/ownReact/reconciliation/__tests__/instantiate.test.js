@@ -111,7 +111,7 @@ describe("instantiate", () => {
             }
         }
 
-        Object.setPrototypeOf(MockComponent, OwnReactComponent.prototype);
+        Object.setPrototypeOf(MockComponent.prototype, OwnReactComponent.prototype);
 
         const element = {
             type: MockComponent,
