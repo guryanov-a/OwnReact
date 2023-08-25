@@ -102,7 +102,7 @@ describe("instantiate", () => {
         });
         updateDomProperties.mockImplementation(id);
         
-        class Component {
+        class MockComponent {
             render() {
                 return {
                     type: 'TEXT ELEMENT',
@@ -111,10 +111,10 @@ describe("instantiate", () => {
             }
         }
 
-        Component.setPrototypeOf();
+        Object.setPrototypeOf(MockComponent, OwnReactComponent.prototype);
 
         const element = {
-            type: Component,
+            type: MockComponent,
         };
 
         const instance = instantiate(element);
