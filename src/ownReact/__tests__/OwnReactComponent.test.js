@@ -1,7 +1,7 @@
-import OwnReactComponent from "../OwnReactComponent";
-import { reconcile } from "../reconciliation/reconcile";
+import { OwnReactComponent, InvalidChildError } from "../OwnReactComponent";
+import { updateComponent } from "../updateComponent";
 
-jest.mock("../reconciliation/reconcile");
+jest.mock("../updateComponent");
 
 describe("OwnReactComponent", () => {
   test('constructor', () => {
@@ -10,13 +10,9 @@ describe("OwnReactComponent", () => {
     expect(component.state).toEqual({});
   });
 
-  test('createElement', () => {
-    const element = OwnReactComponent.createElement('div', {id: 'test'}, 'test');
-    expect(element).toEqual(['div', {id: 'test'}, 'test']);
-  });
-
-  test('render', () => {
-    const updatedInstance = {
+  test('setState', () => {
+    const component = new OwnReactComponent();
+    component.__internalInstance = {
       dom: {
         tagName: 'updatedDom'
       },
@@ -25,16 +21,76 @@ describe("OwnReactComponent", () => {
         'updatedChildInstances'
       ],
     };
-    reconcile.mockImplementation((parentDom, prevInstance, element) => {
-      parentDom.innerHTML = '<div id="test">test</div>';
+    const element = {
+      type: 'div',
+      props: {
+        id: 'test'
+      }
+    };
 
-      return updatedInstance;
+    updateComponent.mockImplementation((internalInstance) => {
+      internalInstance.dom = {
+        tagName: 'updatedDom'
+      };
+      internalInstance.element = element;
+      internalInstance.childInstances = [
+        'updatedChildInstances'
+      ];
     });
-    const element = OwnReactComponent.createElement('div', {id: 'test'}, 'test');
-    const container = document.createElement('div');
-    const result = OwnReactComponent.render(element, container);
-    expect(container.innerHTML).toEqual('<div id="test">test</div>');
-    expect(reconcile).toHaveBeenCalledWith(container, null, element);
-    expect(result).toEqual(updatedInstance);
+
+    component.setState({ test: 'test' });
+    expect(component.state).toEqual({test: 'test'});
+    expect(updateComponent).toHaveBeenCalledWith(component.__internalInstance);
+  });
+
+  describe('createElement', () => {
+    test('object child', () => {
+      const element = OwnReactComponent.createElement('div', { id: 'test' }, { type: 'div', props: { id: 'test' } });
+      expect(element).toEqual({
+        type: 'div',
+        props: {
+          id: 'test',
+          children: [{
+            type: 'div',
+            props: {
+              id: 'test'
+            }
+          }]
+        }
+      });
+    });
+    
+    test('string', () => {
+      const element = OwnReactComponent.createElement('div', { id: 'test' }, 'Hello world!');
+      expect(element).toEqual({
+        type: 'div',
+        props: {
+          id: 'test',
+          children: [{
+            type: 'TEXT ELEMENT',
+            props: {
+              nodeValue: 'Hello world!'
+            }
+          }]
+        }
+      });
+    });
+
+    test('InvalidChildError', () => {
+      console.error = jest.fn();
+      const element = OwnReactComponent.createElement('div', { id: 'test' }, 1);
+
+      expect(element).toEqual({
+        type: 'div',
+        props: {
+          id: 'test',
+          children: []
+        }
+      });
+      expect(console.error).toHaveBeenCalledWith(expect.any(InvalidChildError));
+
+      // restore original console.error
+      delete console.error;
+    });
   });
 });

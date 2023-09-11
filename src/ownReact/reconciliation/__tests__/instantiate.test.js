@@ -1,55 +1,14 @@
 import instantiate from '../instantiate';
-import updateDomProperties from '../updateDomProperties';
+import { updateDomProperties } from '../updateDomProperties';
 import createPublicInstance from '../createPublicInstance';
-import HtmlToJsxElementParser from 'html-react-parser';
-
-const id = (x) => x;
-
-const renderInstanceDom = (instance) => {
-    const { dom, childInstances = [] } = instance;
-
-    const transformedChildInstances = childInstances.map(renderInstanceDom);
-    dom.append(...transformedChildInstances);
-    return dom.outerHTML;
-};
-
-const getEssentialJsxElement = (jsxElement) => {
-    const { type, props = {} } = jsxElement;
-    const { children: childrenWithHtml = [] } = props;
-
-    const children = childrenWithHtml && childrenWithHtml.filter((child) => typeof child !== 'string') || childrenWithHtml;
-    const transformedChildren = children && children.map(getEssentialJsxElement) || childrenWithHtml;
-
-    return {
-        type,
-        props: {
-            ...props,
-            children: transformedChildren,
-        },
-    };
-};
-
-const OwnReactHtmlToJsxElementParser = (instance) => {
-    if (instance.dom.nodeValue) {
-        return {
-            type: 'TEXT ELEMENT',
-            props: {
-                nodeValue: instance.dom.nodeValue,
-            },
-        };
-    }
-
-    const html = renderInstanceDom(instance);
-    const jsxElement = HtmlToJsxElementParser(html);
-    return getEssentialJsxElement(jsxElement);
-};
+import { identity } from "ramda";
+import { OwnReactComponent } from '../../OwnReactComponent';
 
 jest.mock('../updateDomProperties');
 jest.mock('../createPublicInstance');
-jest.mock('../../OwnReactComponent');
 
 describe("instantiate", () => {
-    updateDomProperties.mockImplementation(id);
+    updateDomProperties.mockImplementation(identity);
 
     test('instantiate a DOM element: HTML element', () => {
         const element = {
@@ -66,29 +25,35 @@ describe("instantiate", () => {
             },
         };
 
+        const expectedInstanceDom = document.createElement('div');
+        const expectedInstanceDomChild1 = document.createElement('span');
+        const expectedInstanceDomChild2 = document.createElement('i');
+        expectedInstanceDom.appendChild(expectedInstanceDomChild1);
+        expectedInstanceDom.appendChild(expectedInstanceDomChild2);
+
         const expectedInstance = {
-            type: "div",
-            props: {
-              children: [
+            dom: expectedInstanceDom,
+            element,
+            childInstances: [
                 {
-                  type: "span",
-                  props: {
-                    children: null,
-                  },
+                    dom: expectedInstanceDomChild1,
+                    element: {
+                        type: 'span',
+                    },
+                    childInstances: [],
                 },
                 {
-                  type: "i",
-                  props: {
-                    children: null,
-                  },
+                    dom: expectedInstanceDomChild2,
+                    element: {
+                        type: 'i',
+                    },
+                    childInstances: [],
                 },
-              ],
-            },
-          }
+            ],
+        };
 
         const instance = instantiate(element);
-        const jsxElement = OwnReactHtmlToJsxElementParser(instance);
-        expect(jsxElement).toEqual(expectedInstance);
+        expect(instance).toEqual(expectedInstance);
     });
 
     test('instantiate a DOM element: text', () => {
@@ -96,30 +61,24 @@ describe("instantiate", () => {
             type: 'TEXT ELEMENT',
             props: { nodeValue: 'foo' },
         };
-
         const expectedInstance = {
-            type: 'TEXT ELEMENT',
-            props: { nodeValue: 'foo' },
+            dom: document.createTextNode('foo'),
+            element,
+            childInstances: [],
         };
 
         const instance = instantiate(element);
-        const jsxElement = OwnReactHtmlToJsxElementParser(instance);
-
         
-        expect(jsxElement).toEqual(expectedInstance);
+        expect(instance).toEqual(expectedInstance);
     });
 
     test('instantiate a class component', () => {
-        class MockClassComponent {
-            static isOwnReactComponent() {}
-            
-            render() {
-                return {
-                    type: 'TEXT ELEMENT',
-                    props: { nodeValue: 'foo' },
-                };
-            }
-        }
+        const MockClassComponent = jest.fn();
+        MockClassComponent.render = jest.fn(() => ({
+            type: 'TEXT ELEMENT',
+            props: { nodeValue: 'foo' },
+        }));
+        OwnReactComponent.isPrototypeOf = jest.fn(() => true);
 
         createPublicInstance.mockImplementation((element, instance) => new MockClassComponent());
 
@@ -128,56 +87,54 @@ describe("instantiate", () => {
         };
 
         const instance = instantiate(element);
-        const jsxElement = OwnReactHtmlToJsxElementParser(instance);
 
         const expectedInstance = {
-            type: 'TEXT ELEMENT',
-            props: { nodeValue: 'foo' },
-        };
-        expect(jsxElement).toEqual(expectedInstance);
-    });
-
-    test('instantiate a function component', () => {
-        const element = {
-            type: () => {
-                return {
-                    type: 'TEXT ELEMENT',
-                    props: { nodeValue: 'foo' },
-                };
-            },
-            props: {},
-        };
-
-        const instance = instantiate(element);
-        const jsxElement = OwnReactHtmlToJsxElementParser(instance);
-
-        const expectedInstance = {
-            type: 'TEXT ELEMENT',
-            props: { nodeValue: 'foo' },
-        };
-        expect(jsxElement).toEqual(expectedInstance);
-    });
-
-    test('instantiate a null element', () => {
-        const element = {
-            type: null,
-        };
-        const expectedInstance = {
-            dom: null,
+            dom: document.createTextNode('foo'),
             element,
+            childInstances: [],
         };
-
-        const instance = instantiate(element);
-        expect(instance).toEqual(undefined);
+        expect(instance).toEqual(expectedInstance);
     });
+
+    const originalConsoleError = console.error;
 
     test('error: invalid type', () => {
         const element = {
             type: 1,
         };
 
+        console.error = jest.fn();
         const result = instantiate(element);
 
+        expect(console.error).toHaveBeenCalledWith(`Invalid type: ${String(element.type)}`);
         expect(result).toEqual(undefined);
+
+        console.error = originalConsoleError;
+    });
+
+    const testCases = [
+        [null, undefined], 
+        [undefined, undefined],
+        [0, undefined],
+        [false, undefined],
+        ['', undefined],
+        [NaN, undefined],
+        [{}, undefined],
+        [{type: null}, undefined],
+        [{type: 0}, undefined],
+        [{type: false}, undefined],
+        [{type: ''}, undefined],
+        [{type: NaN}, undefined],
+      ];
+
+    // use test.each to iterate over the test cases and run your function with each value of initialElement
+    test.each(testCases)('error: wrong input with input = %p', (initialElement, expectedType) => {
+        console.error = jest.fn();
+        const result = instantiate(initialElement);
+
+        expect(result).toBe(expectedType);
+        expect(console.error).toHaveBeenCalledWith(`Invalid input: ${String(initialElement)}`);
+
+        console.error = originalConsoleError;
     });
 });

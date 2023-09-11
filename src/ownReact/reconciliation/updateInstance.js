@@ -1,4 +1,5 @@
-import reconcile from './reconcile.js';
+import { updateDomProperties } from './updateDomProperties.js';
+import { reconcileChildren } from './reconcileChildren.js';
 
 /**
  * Updates instance
@@ -22,9 +23,9 @@ import reconcile from './reconcile.js';
  * @see https://reactjs.org/docs/reconciliation.html#keys
  * @see https://reactjs.org/docs/reconciliation.html#recursing-on-children
  */
-export default function updateInstance(instance, element) {
-    updateDomProperties(instance.dom, instance.element.props, element.props);
-    instance.childInstances = reconcileChildren(instance, element);
-    instance.element = element;
-    return instance;
+export function updateInstance(instance, element) {
+    const updatedInstance = updateDomProperties(instance, element);
+    updatedInstance.childInstances = reconcileChildren(instance, element);
+    updatedInstance.element = element;
+    return updatedInstance;
 }

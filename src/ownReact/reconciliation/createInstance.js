@@ -18,7 +18,7 @@ import instantiate from './instantiate';
  * @see https://reactjs.org/docs/react-component.html#componentwillunmount
  * @see https://reactjs.org/docs/react-component.html#render
  */
-export default function createInstance(container, element) {
+export function createInstance(container, element) {
     const instance = instantiate(element);
     container.appendChild(instance.dom);
     

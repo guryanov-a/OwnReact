@@ -1,13 +1,18 @@
-import createInstance from './createInstance';
-import removeInstance from './removeInstance';
+import { createInstance } from './createInstance';
+import { removeInstance } from './removeInstance';
 import { replaceInstance } from './replaceInstance';
-import updateInstance from './updateInstance';
-import OwnReactComponent from '../OwnReactComponent';
+import { updateInstance } from './updateInstance';
+import { updateComponentInstance } from './updateComponentInstance';
+import { OwnReactComponent } from '../OwnReactComponent';
+
+export class UnexpectedError extends Error {}
+export class WrongInputError extends Error {}
+export class WrongDataError extends Error {}
 
 /**
  * reconcile VDOM states
  * @param {HTMLElement} container
- * @param {Object} prevInstance
+ * @param {Object} currentInstance
  * @param {Object} element
  * @returns {Object} nextInstance
  * @example
@@ -22,39 +27,44 @@ import OwnReactComponent from '../OwnReactComponent';
  * @todo
  * - [ ] test
  */
-export function reconcile(parentDom, prevInstance, element) {
-    if (prevInstance === undefined || element === undefined) {
-        throw Error('prev instance or curr element is undefined. This should not happen.');
+export function reconcile(container, currentInstance, element) {
+    if (currentInstance === undefined || element === undefined) {
+        console.error(new WrongInputError('prev instance or curr element is undefined. This should not happen.'));
+        return currentInstance;
     }
 
     // choosing what to do with the instance
-    if (prevInstance === null) {
+    if (currentInstance === null) {
         // initial render
-        return createInstance(parentDom, element);
+        return createInstance(container, element);
     }
     
     if (element === null) {
         // clean up after removing
-        return removeInstance(prevInstance);
+        return removeInstance(container, currentInstance);
     }
     
-    if (prevInstance.element === undefined || prevInstance.element.type === undefined || element.type === undefined) {
-        throw Error('prev or curr element type is undefined. This should not happen.');
+    if (!(currentInstance.element && currentInstance.element.type) || !element.type) {
+        console.error(new WrongDataError('prev or curr element type is undefined. This should not happen.'));
+        return currentInstance;
     }
 
-    if (prevInstance.element.type === element.type) {
-        // update instance in case of minor changes
-        return updateInstance(prevInstance, element);
-    } else if (typeof element.type === 'string') {
+    if (currentInstance.element.type === element.type && OwnReactComponent.isPrototypeOf(element.type)) {
+        // update component instance 
+        return updateComponentInstance(currentInstance, element);
+    }
+    
+    if (typeof element.type === 'string') {
         // update instance in case if the element for the update is simple
-        return updateInstance(prevInstance, element);
+        return updateInstance(currentInstance, element);
     }
 
-    if (prevInstance.element.type !== element.type && OwnReactComponent.isPrototypeOf(element.type)) {
+    if (currentInstance.element.type !== element.type) {
         // replace instance in case of major changes
-        return replaceInstance(prevInstance, element);
+        return replaceInstance(container, currentInstance, element);
     }
 
     // default
-    throw Error('Something went wrong. This should not happen.');
+    console.error(new UnexpectedError('No condition for reconciliation is met. This should not happen.'));
+    return currentInstance;
 }

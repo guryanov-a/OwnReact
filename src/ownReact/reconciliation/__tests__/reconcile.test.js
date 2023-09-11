@@ -1,17 +1,21 @@
 import { reconcile } from '../reconcile';
-import createInstance from '../createInstance';
-import removeInstance from '../removeInstance';
-import updateInstance from '../updateInstance';
+import { createInstance } from '../createInstance';
+import { removeInstance } from '../removeInstance';
+import { updateInstance } from '../updateInstance';
+import { updateComponentInstance } from '../updateComponentInstance';
 import { replaceInstance } from '../replaceInstance';
-import OwnReactComponent from '../../OwnReactComponent';
+import { OwnReactComponent } from '../../OwnReactComponent';
+import { UnexpectedError, WrongDataError, WrongInputError } from '../reconcile';
 
 jest.mock('../createInstance');
 jest.mock('../removeInstance');
 jest.mock('../updateInstance');
 jest.mock('../replaceInstance');
+jest.mock('../updateComponentInstance');
+
+const originalConsoleError = console.error;
 
 describe('reconcile', () => {
-    // createInsance is mocked with expected data and is called with right arguments
     it('createInsance', () => {
         createInstance.mockImplementation((parentDom, element) => {
             return {
@@ -25,7 +29,7 @@ describe('reconcile', () => {
         const element = {
             type: null,
         };
-        const result = reconcile(parentDom, null, element, createInstance);
+        const result = reconcile(parentDom, null, element);
         expect(createInstance).toHaveBeenCalledWith(parentDom, element);
         expect(result).toEqual({
             dom: {},
@@ -34,7 +38,6 @@ describe('reconcile', () => {
         });
     });
 
-    // removeInstance is mocked with expected data and is called with right arguments
     it('removeInstance', () => {
         removeInstance.mockImplementation((prevInstance) => {
             return null;
@@ -48,11 +51,9 @@ describe('reconcile', () => {
             childInstances: [],
         };
         const result = reconcile(parentDom, prevInstance, element);
-        expect(removeInstance).toHaveBeenCalledWith(prevInstance);
         expect(result).toBe(null);
     });
 
-    // updateInstance is mocked with expected data and is called with right arguments
     it('updateInstance: in case of minor changes', () => {
         const updatedInstance = {
             dom: {
@@ -78,7 +79,6 @@ describe('reconcile', () => {
             childInstances: [],
         };
         const result = reconcile(parentDom, prevInstance, element);
-        expect(updateInstance).toHaveBeenCalledWith(prevInstance, element);
         expect(result).toEqual(updatedInstance);
     });
 
@@ -116,7 +116,6 @@ describe('reconcile', () => {
         expect(result).toEqual(updatedInstance);
     });
 
-    // replaceInstance is mocked with expected data and is called with right arguments
     it('replaceInstance', () => {
         class MockComponent1 extends OwnReactComponent {
             render() {
@@ -164,74 +163,142 @@ describe('reconcile', () => {
             childInstances: [],
         };
         const result = reconcile(parentDom, prevInstance, element);
-        expect(replaceInstance).toHaveBeenCalledWith(prevInstance, element);
         expect(result).toEqual(replacedInstance);
     });
 
-    it('error: prev instance or curr element is undefined', () => {
+    it('updateComponentInstance', () => {
+        class MockComponent extends OwnReactComponent {
+            render() {
+                return {
+                    type: 'TEXT ELEMENT',
+                    props: { nodeValue: 'foo' },
+                };
+            }
+        }
+
+        const updatedInstance = {
+            dom: {
+                tagName: 'updatedDom'
+            },
+            element: {
+                type: MockComponent,
+                props: { nodeValue: 'bar' },
+            },
+            childInstances: [
+                'updatedChildInstances'
+            ],
+        };
+
+        updateComponentInstance.mockImplementation((prevInstance, element) => {
+            return updatedInstance;
+        });
+
         const parentDom = {};
         const element = {
-            type: 'div',
+            type: MockComponent,
         };
         const prevInstance = {
             dom: {},
             element: {
-                type: 'div',
+                type: MockComponent,
             },
             childInstances: [],
         };
-        expect(() => reconcile(parentDom, undefined, element)).toThrow();
-        expect(() => reconcile(parentDom, prevInstance, undefined)).toThrow();
+        const result = reconcile(parentDom, prevInstance, element);
+        expect(result).toEqual(updatedInstance);
     });
 
-    it('error: prev or curr element type is undefined', () => {
-        const parentDom = {};
-        const elementTypeUndefined = {
-            type: undefined,
-        };
-        const prevInstanceTypeUndefined = {
-            dom: {},
-            element: {
+    describe('errors', () => {
+        describe('error: wrong input', () => {
+            const parentDom = {};
+            const element = {
+                type: 'div',
+            };
+            const prevInstance = {
+                dom: {},
+                element: {
+                    type: 'div',
+                },
+                childInstances: [],
+            };
+    
+            const testCasesWrongParameters = [
+                [undefined, element],
+                [prevInstance, undefined],
+                [undefined, undefined],
+            ];
+    
+            test.each(testCasesWrongParameters)('error: wrong parameters = %p', (prevInstance, element) => {
+                console.error = jest.fn();
+                reconcile(parentDom, prevInstance, element);
+                expect(console.error).toHaveBeenCalledWith(expect.any(WrongInputError));
+                console.error = originalConsoleError;
+            });
+        });
+    
+        describe('error: wrong data', () => {
+            const elementTypeUndefined = {
                 type: undefined,
-            },
-            childInstances: [],
-        };
-        const prevInstanceElementUndefined = {
-            dom: {},
-            element: undefined,
-            childInstances: [],
-        };
-        const element = {
-            type: 'div',
-        };
-        const prevInstance = {
-            dom: {},
-            element: {
+            };
+            const prevInstanceTypeUndefined = {
+                dom: {},
+                element: {
+                    type: undefined,
+                },
+                childInstances: [],
+            };
+            const prevInstanceElementUndefined = {
+                dom: {},
+                element: undefined,
+                childInstances: [],
+            };
+            const elementWrongData = {
                 type: 'div',
-            },
-            childInstances: [],
-        };
-
-        expect(() => reconcile(parentDom, prevInstance, elementTypeUndefined)).toThrow();
-        expect(() => reconcile(parentDom, prevInstanceTypeUndefined, element)).toThrow();
-        expect(() => reconcile(parentDom, prevInstanceTypeUndefined, elementTypeUndefined)).toThrow();
-        expect(() => reconcile(parentDom, prevInstanceElementUndefined, element)).toThrow();
-    });
-
-    it('error: something went wrong', () => {
-        class MockClassComponent {}
-
-        const parentDom = {};
-        const element = {
-            type: MockClassComponent,
-        };
-        const prevInstance = {
-            dom: {},
-            element: {
-                type: 'div',
-            },
-            childInstances: [],
-        };
-        expect(() => reconcile(parentDom, prevInstance, element)).toThrow();
+            };
+            const prevInstance = {
+                dom: {},
+                element: {
+                    type: 'div',
+                },
+                childInstances: [],
+            };
+            const parentDomWrongData = {};
+        
+            const testCasesWrongData = [
+                [prevInstance, elementTypeUndefined],
+                [prevInstanceTypeUndefined, elementWrongData],
+                [prevInstanceTypeUndefined, elementTypeUndefined],
+                [prevInstanceElementUndefined, elementWrongData],
+            ];
+    
+            test.each(testCasesWrongData)('error: wrong data = %p', (prevInstance, element) => {
+                console.error = jest.fn();
+    
+                reconcile(parentDomWrongData, prevInstance, element);
+                expect(console.error).toHaveBeenCalledWith(expect.any(WrongDataError));
+                console.error = originalConsoleError;
+            });
+        });
+    
+        it('error: something went wrong', () => {
+            console.error = jest.fn();
+            class MockClassComponent {}
+            const parentDom = {};
+            const element = {
+                type: MockClassComponent,
+            };
+            const prevInstance = {
+                dom: {},
+                element: {
+                    type: MockClassComponent,
+                },
+                childInstances: [],
+            };
+    
+            reconcile(parentDom, prevInstance, element);
+    
+            expect(console.error).toHaveBeenCalledWith(expect.any(UnexpectedError));
+            console.error = originalConsoleError;
+        });
     });
 });

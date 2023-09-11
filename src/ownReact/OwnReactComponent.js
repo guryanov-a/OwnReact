@@ -1,32 +1,55 @@
-import { reconcile } from './reconciliation/reconcile';
+import { updateComponent } from './updateComponent';
 
-let rootInstance = null;
+export class InvalidChildError extends Error {}
 
-export default class OwnReactComponent {
-  constructor(props) {
-      this.props = props || {};
-      this.state = {};
-  }
+export class OwnReactComponent {
+    constructor(props) {
+        this.props = props || {};
+        this.state = {};
+    }
 
-  static isOwnReactComponent() {}
+    setState(partialState) {
+        this.state = {
+            ...this.state,
+            ...partialState
+        };
 
-  setState(partialState) {
-      this.state = {
-          ...this.state,
-          ...partialState
-      };
-      
-      updateInstance(this.__internalInstance);
-  }
+        updateComponent(this.__internalInstance);
+    }
 
-  static createElement(name, attrs, ...childs) {
-    return [name, attrs, ...childs];
-  }
+    static createElement(type, props, ...children) {
+        const childrenElements = children.reduce((prevValue, currValue) => {
+            if (typeof currValue === 'object') {
+                return [
+                    ...prevValue,
+                    currValue
+                ];
+            }
+            
+            if (typeof currValue === 'string') {
+                return [
+                    ...prevValue,
+                    {
+                        type: 'TEXT ELEMENT',
+                        props: {
+                            nodeValue: currValue
+                        }
+                    }
+                ];
+            }
+            
+            console.error(new InvalidChildError(`Invalid child: ${currValue}`));
+            return prevValue;
+        }, []);
 
-  static render(element, container) {
-    const prevInstance = rootInstance;
-    const nextInstance = reconcile(container, prevInstance, element);
-    rootInstance = nextInstance;
-    return rootInstance;
-  }
+        return {
+            type,
+            props: {
+                ...props,
+                children: childrenElements,
+            }
+        };
+    }
 }
+
+OwnReactComponent.__internalInstance = null;

@@ -19,8 +19,8 @@
  * @see https://reactjs.org/docs/reconciliation.html#keys
  * @see https://reactjs.org/docs/reconciliation.html#recursing-on-children
  */
-export default function removeInstance(instance) {
-    const { parentInstance: { parentDom } } = instance;
+export function removeInstance(parentDom, instance) {
     parentDom.removeChild(instance.dom);
+    
     return null;
 }

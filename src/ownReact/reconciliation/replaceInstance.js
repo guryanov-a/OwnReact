@@ -1,4 +1,4 @@
-import createInstance from './createInstance';
+import { createInstance } from './createInstance';
 
 /**
  * Replaces a DOM node with a new instance.
@@ -26,11 +26,8 @@ import createInstance from './createInstance';
  * @see https://reactjs.org/docs/react-component.html#updating-render
  * @see https://reactjs.org/docs/react-component.html#updating-getsnapshotbeforeupdate
  */
-export function replaceInstance(prevInstance, element) {
-    const { parentInstance } = prevInstance;
-    const { childInstances } = parentInstance;
-    const index = childInstances.indexOf(prevInstance);
+export function replaceInstance(container, prevInstance, element) {
     const nextInstance = createInstance(element);
-    childInstances[index] = nextInstance;
+    container.replaceChild(nextInstance.dom, prevInstance.dom);
     return nextInstance;
 }

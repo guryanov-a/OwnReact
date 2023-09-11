@@ -1,6 +1,6 @@
-import updateDomProperties from './updateDomProperties.js';
-import createPublicInstance from './createPublicInstance.js';
-import OwnReactComponent from '../OwnReactComponent.js';
+import { updateDomProperties } from './updateDomProperties';
+import createPublicInstance from './createPublicInstance';
+import OwnReactComponent from '../OwnReactComponent';
 
 /**
  * Instantiate a component
@@ -46,7 +46,7 @@ export default function instantiate(element) {
         return instance;
     }
 
-    const isClassElement = !!type.isOwnReactComponent;
+    const isClassElement = OwnReactComponent.isPrototypeOf(type);
     if (isClassElement) {
         // create instance of a component
         const instance = {};
@@ -62,21 +62,7 @@ export default function instantiate(element) {
             childInstance,
             publicInstance,
         };
-    } 
-
-    const isFunctionElement = typeof type === 'function';
-    if (isFunctionElement) {
-        const { type: FunctionComponent } = element;
-        const childElement = FunctionComponent(props);
-        const childInstance = instantiate(childElement);
-        const dom = childInstance.dom;
-
-        return {
-            dom,
-            element,
-            childInstance,
-        };
     }
 
-    console.error(`Invalid type: "${type} or extends for class component is not used".`);
+    console.error(`Invalid type: ${type}`);
 }
