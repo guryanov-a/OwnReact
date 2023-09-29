@@ -1,5 +1,5 @@
 export function updateDomProperties(instance, element) {
-    const { props } = element;
+    const { props = {} } = element;
     const { children: _, ...domProps } = props;
     
     Object.keys(domProps).forEach((propName) => {

@@ -1,13 +1,12 @@
 import { reconcile } from './reconcile';
 
-export const updateComponentInstance = (currentInstance, element) => {
-    const { publicInstance } = currentInstance;
-    const { props } = element;
-
-    publicInstance.props = props;
-    const childElement = publicInstance.render();
-    const nextInstance = reconcile(currentInstance.dom, currentInstance, childElement);
-    publicInstance.__internalInstance = nextInstance;
-
-    return nextInstance;
+export const updateComponentInstance = (container, instance, element) => {
+    instance.publicInstance.props = element.props;
+    const childElement = instance.publicInstance.render();
+    const oldChildInstance = instance.childInstance;
+    const childInstance = reconcile(container, oldChildInstance, childElement);
+    instance.dom = childInstance.dom;
+    instance.childInstance = childInstance;
+    instance.element = element;
+    return instance;
 };

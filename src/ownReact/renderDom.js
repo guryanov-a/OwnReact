@@ -1,7 +1,5 @@
 import { reconcile } from "./reconciliation/reconcile";
 
-export const renderDom = (Component, container) => {
-    const component = new Component();
-    const element = component.render();
+export const renderDom = (element, container) => {
     return reconcile(container, null, element);
 }

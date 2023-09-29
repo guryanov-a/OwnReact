@@ -1,6 +1,9 @@
 import { updateDomProperties } from './updateDomProperties';
 import createPublicInstance from './createPublicInstance';
-import OwnReactComponent from '../OwnReactComponent';
+import { OwnReactComponent } from '../OwnReactComponent';
+
+export class InvalidTypeError extends Error {}
+export class InvalidInputError extends Error {}
 
 /**
  * Instantiate a component
@@ -19,7 +22,7 @@ import OwnReactComponent from '../OwnReactComponent';
  */
 export default function instantiate(element) {
     if (!element || !element.type) {
-        console.error(`Invalid input: ${element}`);
+        console.error(new InvalidInputError(`Invalid input: ${element}`));
         return;
     }
 
@@ -55,14 +58,15 @@ export default function instantiate(element) {
         const childInstance = instantiate(childElement);
         const dom = childInstance.dom;
 
-        return {
-            ...instance,
+        Object.assign(instance, { 
             dom,
             element,
             childInstance,
             publicInstance,
-        };
+        });
+        
+        return instance;
     }
 
-    console.error(`Invalid type: ${type}`);
+    console.error(new InvalidTypeError(`Invalid type: ${type}`));
 }

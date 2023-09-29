@@ -17,7 +17,9 @@ export class OwnReactComponent {
         updateComponent(this.__internalInstance);
     }
 
-    static createElement(type, props, ...children) {
+    static createElement(type, props, ...inputChildren) {
+        const isChildrenArray = Array.isArray(inputChildren[0]);
+        const children = isChildrenArray ? inputChildren[0] : inputChildren;
         const childrenElements = children.reduce((prevValue, currValue) => {
             if (typeof currValue === 'object') {
                 return [

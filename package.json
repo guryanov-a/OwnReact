@@ -9,11 +9,8 @@
   "keywords": [
     "react"
   ],
-  "author": "Mikhail Shilov <mikhail.shilov@csssr.com",
-  "contributors": [
-    "Ruslan Baigunussov <ruslan.baigunussov@csssr.com>"
-  ],
-  "license": "ISC",
+  "author": "Gurianov Artem <guryanov.artyom@gmail.com>",
+  "license": "WTFPL",
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint -- --fix",

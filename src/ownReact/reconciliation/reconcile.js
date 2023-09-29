@@ -1,6 +1,5 @@
 import { createInstance } from './createInstance';
 import { removeInstance } from './removeInstance';
-import { replaceInstance } from './replaceInstance';
 import { updateInstance } from './updateInstance';
 import { updateComponentInstance } from './updateComponentInstance';
 import { OwnReactComponent } from '../OwnReactComponent';
@@ -49,9 +48,10 @@ export function reconcile(container, currentInstance, element) {
         return currentInstance;
     }
 
-    if (currentInstance.element.type === element.type && OwnReactComponent.isPrototypeOf(element.type)) {
-        // update component instance 
-        return updateComponentInstance(currentInstance, element);
+    if (currentInstance.element.type !== element.type) {
+        // replace instance in case of major changes
+        const newInstance = reconcile(container, null, element);
+        return newInstance;
     }
     
     if (typeof element.type === 'string') {
@@ -59,9 +59,9 @@ export function reconcile(container, currentInstance, element) {
         return updateInstance(currentInstance, element);
     }
 
-    if (currentInstance.element.type !== element.type) {
-        // replace instance in case of major changes
-        return replaceInstance(container, currentInstance, element);
+    if (currentInstance.element.type === element.type && OwnReactComponent.isPrototypeOf(element.type)) {
+        // update component instance 
+        return updateComponentInstance(container, currentInstance, element);
     }
 
     // default

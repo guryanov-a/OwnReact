@@ -1,4 +1,5 @@
 import instantiate from './instantiate';
+import { OwnReactComponent } from '../OwnReactComponent';
 
 /**
  * Creates instance of a DOM element
@@ -21,6 +22,10 @@ import instantiate from './instantiate';
 export function createInstance(container, element) {
     const instance = instantiate(element);
     container.appendChild(instance.dom);
+
+    if (OwnReactComponent.isPrototypeOf(element.type)) {
+        instance.publicInstance.componentDidMount && instance.publicInstance.componentDidMount();
+    }
     
     return instance;
 }

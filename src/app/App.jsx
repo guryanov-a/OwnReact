@@ -1,41 +1,89 @@
+import { OwnReactComponent } from "../ownReact/OwnReactComponent";
+
 /**
  * List item (which is wrapper for <li>)
  * @param {string} props.children - content of list item
  * @returns {JSX.Element}
  */
-const ListItem = (props) => {
-    return (
-        <li>{props.children}</li>
-    );
-};
+class ListItem extends OwnReactComponent {
+    render() {
+        return (
+            <li>{this.props.children}</li>
+        );
+    }
+}
 
 /**
  * List (which is wrapper for <ul>)
  * @param props.children - list items
  * @returns {JSX.Element}
  */
-const List = (props) => {
-    return (
-        <ul>
-            {props.children}
-        </ul>
-    );
+class List extends OwnReactComponent {
+    render() {
+        return (
+            <ul>
+                {this.props.children}
+            </ul>
+        );
+    }
 }
+
+const alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+"N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
+let timer;
 
 /**
  * List with random numbers
  */
-const App = () => {
-    // creating list items
-    const listItems = alphabet.map((letter) => {
-        return <ListItem key={letter}>{letter}</ListItem>
-    });
+class App extends OwnReactComponent {
+    constructor(props) {
+        super(props);
 
-    return (
-        <List>
-            {listItems}
-        </List>
-      );
-};
+        this.state = {
+            alphabet,
+        };
+    }
+
+    updateAlphabet() {
+        const alphabet = this.state.alphabet;
+        const index = Math.floor(Math.random() * alphabet.length);
+        const letter = alphabet[index];
+
+        alphabet[index] = letter.toLowerCase();
+
+        this.setState({
+            alphabet,
+        });
+    }
+
+    componentDidMount() {
+        console.log("App component did mount");
+        timer = setInterval(() => {
+            this.updateAlphabet();
+        }, 5000);
+
+        this.setState({
+            alphabet: alphabet
+        });
+    }
+
+    componentWillUnmount() {
+        clearInterval(timer);
+    }
+
+    render() {
+        // creating list items
+        const listItems = this.state.alphabet.map((letter) => {
+            return <ListItem>{letter}</ListItem>
+        });
+
+        return (
+            <List>
+                {listItems}
+            </List>
+        );
+    }
+}
 
 export default App;

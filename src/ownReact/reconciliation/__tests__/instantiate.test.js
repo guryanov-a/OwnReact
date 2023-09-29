@@ -1,4 +1,4 @@
-import instantiate from '../instantiate';
+import instantiate, { InvalidTypeError, InvalidInputError } from '../instantiate';
 import { updateDomProperties } from '../updateDomProperties';
 import createPublicInstance from '../createPublicInstance';
 import { identity } from "ramda";
@@ -74,11 +74,11 @@ describe("instantiate", () => {
 
     test('instantiate a class component', () => {
         const MockClassComponent = jest.fn();
-        MockClassComponent.render = jest.fn(() => ({
+        MockClassComponent.prototype.render = jest.fn(() => ({
             type: 'TEXT ELEMENT',
             props: { nodeValue: 'foo' },
         }));
-        OwnReactComponent.isPrototypeOf = jest.fn(() => true);
+        const isPrototypeOfSpy = jest.spyOn(OwnReactComponent, "isPrototypeOf").mockReturnValue(true);
 
         createPublicInstance.mockImplementation((element, instance) => new MockClassComponent());
 
@@ -91,25 +91,33 @@ describe("instantiate", () => {
         const expectedInstance = {
             dom: document.createTextNode('foo'),
             element,
-            childInstances: [],
+            publicInstance: new MockClassComponent(),
+            childInstance: {
+                dom: document.createTextNode('foo'),
+                element: {
+                    type: 'TEXT ELEMENT',
+                    props: { nodeValue: 'foo' },
+                },
+                childInstances: [],
+            },
         };
         expect(instance).toEqual(expectedInstance);
-    });
 
-    const originalConsoleError = console.error;
+        isPrototypeOfSpy.mockRestore();
+    });
 
     test('error: invalid type', () => {
         const element = {
             type: 1,
         };
 
-        console.error = jest.fn();
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(() => {});
         const result = instantiate(element);
 
-        expect(console.error).toHaveBeenCalledWith(`Invalid type: ${String(element.type)}`);
+        expect(console.error).toHaveBeenCalledWith(expect.any(InvalidTypeError));
         expect(result).toEqual(undefined);
 
-        console.error = originalConsoleError;
+        consoleErrorSpy.mockRestore();
     });
 
     const testCases = [
@@ -125,16 +133,18 @@ describe("instantiate", () => {
         [{type: false}, undefined],
         [{type: ''}, undefined],
         [{type: NaN}, undefined],
-      ];
+    ];
 
-    // use test.each to iterate over the test cases and run your function with each value of initialElement
-    test.each(testCases)('error: wrong input with input = %p', (initialElement, expectedType) => {
-        console.error = jest.fn();
-        const result = instantiate(initialElement);
+    describe('errors: wrong input', () => {
+        // use test.each to iterate over the test cases and run your function with each value of initialElement
+        test.each(testCases)('error: wrong input with input = %p', (initialElement, expectedType) => {
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(() => {});
+            const result = instantiate(initialElement);
 
-        expect(result).toBe(expectedType);
-        expect(console.error).toHaveBeenCalledWith(`Invalid input: ${String(initialElement)}`);
+            expect(result).toBe(expectedType);
+            expect(console.error).toHaveBeenCalledWith(expect.any(InvalidInputError));
 
-        console.error = originalConsoleError;
+            consoleErrorSpy.mockRestore();
+        });
     });
 });
