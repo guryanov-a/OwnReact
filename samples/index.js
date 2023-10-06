@@ -1,7 +1,7 @@
 import OwnReactComponent from "../src/ownReact/OwnReactComponent";
-import App from "./App";
+import SampleApp from "./SampleApp";
 
 const root = document.getElementById("root");
 
 // eslint-disable-next-line react/no-deprecated
-OwnReactComponent.render(App, root);
+OwnReactComponent.render(SampleApp, root);

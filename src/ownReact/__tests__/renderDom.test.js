@@ -1,35 +1,33 @@
 import { renderDom } from "../renderDom";
 import { reconcile } from "../reconciliation/reconcile";
+import { OwnReactComponent } from "../OwnReactComponent";
 
 jest.mock("../reconciliation/reconcile");
 
 describe("renderDom", () => {
-    test('renderDom', () => {
-        const container = {
-            tagName: 'container'
-        };
-        const expectedElement = {
-            type: 'newDiv',
-        };
-        const expectedInstance = {
-            dom: {},
-            element: {
-                type: 'newDivEnd',
-            },
-            childInstances: [],
-        };
+  it("renderDom", () => {
+    expect.hasAssertions();
+    const Component = jest.fn();
 
-        const Component = jest.fn();
-        const component = {
-            render: jest.fn(),
-        };
+    const container = {
+      tagName: "container"
+    };
+    const expectedElement = {
+      type: Component,
+      props: {
+        children: []
+      }
+    };
+    const expectedInstance = {
+      dom: {},
+      element: expectedElement,
+      childInstances: []
+    };
 
-        Component.mockImplementation(() => component);
-        component.render.mockImplementation(() => expectedElement);
-        reconcile.mockImplementation(() => expectedInstance);
+    reconcile.mockReturnValue(expectedInstance);
 
-        const result = renderDom(Component, container);
-        expect(reconcile).toHaveBeenCalledWith(container, null, expectedElement);
-        expect(result).toEqual(expectedInstance);
-    });
+    const result = renderDom(<Component />, container);
+    expect(reconcile).toHaveBeenCalledWith(container, null, expectedElement);
+    expect(result).toStrictEqual(expectedInstance);
+  });
 });

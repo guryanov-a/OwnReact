@@ -1,15 +1,15 @@
-import instantiate from './instantiate';
-import { OwnReactComponent } from '../OwnReactComponent';
+import instantiate from "./instantiate";
+import { OwnReactComponent } from "../OwnReactComponent";
 
 /**
  * Creates instance of a DOM element
  * @param {HTMLElement} container
  * @param {Object} element
  * @returns {Object} instance
- * 
+ *
  * @todo
  * - [ ] test
- * 
+ *
  * @see https://reactjs.org/docs/reconciliation.html#mounting-components
  * @see https://reactjs.org/docs/react-component.html#constructor
  * @see https://reactjs.org/docs/react-component.html#componentdidmount
@@ -20,12 +20,13 @@ import { OwnReactComponent } from '../OwnReactComponent';
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export function createInstance(container, element) {
-    const instance = instantiate(element);
-    container.appendChild(instance.dom);
+  const instance = instantiate(element);
+  container.appendChild(instance.dom);
 
-    if (OwnReactComponent.isPrototypeOf(element.type)) {
-        instance.publicInstance.componentDidMount && instance.publicInstance.componentDidMount();
-    }
-    
-    return instance;
+  if (Object.prototype.isPrototypeOf.call(OwnReactComponent, element.type)) {
+    instance.publicInstance.componentDidMount &&
+      instance.publicInstance.componentDidMount();
+  }
+
+  return instance;
 }

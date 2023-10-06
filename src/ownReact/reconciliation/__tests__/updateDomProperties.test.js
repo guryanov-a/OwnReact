@@ -1,23 +1,29 @@
-import { updateDomProperties } from '../updateDomProperties';
+import { updateDomProperties } from "../updateDomProperties";
 
-describe('updateDomProperties', () => {
-    it('should update dom properties', () => {
-        const instance = {
-            className: '',
-            style: {}
-        };
-        const element = {
-            props: {
-                className: 'foo',
-                style: {
-                    color: 'red'
-                }
-            }
-        };
+describe("updateDomProperties", () => {
+  it("should update dom properties", () => {
+    expect.hasAssertions();
+    const element = {
+      props: {
+        className: "foo",
+        style: {
+          color: "red"
+        }
+      }
+    };
+    const instance = {
+      className: "",
+      style: {},
+      element
+    };
 
-        const nextInstance = updateDomProperties(instance, element);
+    const nextInstance = updateDomProperties(
+      instance.dom,
+      instance.element.props,
+      element.props
+    );
 
-        expect(nextInstance.className).toBe('foo');
-        expect(nextInstance.style.color).toBe('red');
-    });
+    expect(nextInstance.className).toBe("foo");
+    expect(nextInstance.style.color).toBe("red");
+  });
 });

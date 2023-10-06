@@ -1,6 +1,6 @@
-import { updateDomProperties } from './updateDomProperties';
-import createPublicInstance from './createPublicInstance';
-import { OwnReactComponent } from '../OwnReactComponent';
+import { updateDomProperties } from "./updateDomProperties";
+import createPublicInstance from "./createPublicInstance";
+import { OwnReactComponent } from "../OwnReactComponent";
 
 export class InvalidTypeError extends Error {}
 export class InvalidInputError extends Error {}
@@ -10,7 +10,7 @@ export class InvalidInputError extends Error {}
  * @param {Function} type
  * @param {Object} props
  * @returns {Object} instance
- * 
+ *
  * @see https://reactjs.org/docs/reconciliation.html#mounting-components
  * @see https://reactjs.org/docs/react-component.html#constructor
  * @see https://reactjs.org/docs/react-component.html#componentdidmount
@@ -21,52 +21,57 @@ export class InvalidInputError extends Error {}
  * @see https://reactjs.org/docs/react-component.html#render
  */
 export default function instantiate(element) {
-    if (!element || !element.type) {
-        console.error(new InvalidInputError(`Invalid input: ${element}`));
-        return;
-    }
+  if (!element || !element.type) {
+    console.error(new InvalidInputError(`Invalid input: ${element}`));
+    return;
+  }
 
-    const { type, props = {} } = element;
-    const isDomElement = typeof type === 'string';
+  const { type, props = {} } = element;
+  const isDomElement = typeof type === "string";
 
-    if (isDomElement) {
-        // create DOM element
-        const isTextElement = type === 'TEXT ELEMENT';
-        const domElement = isTextElement ? document.createTextNode(element.props.nodeValue) : document.createElement(type);
+  if (isDomElement) {
+    // create DOM element
+    const isTextElement = type === "TEXT ELEMENT";
+    const domElement = isTextElement
+      ? document.createTextNode(element.props.nodeValue)
+      : document.createElement(type);
 
-        const dom = updateDomProperties(domElement, [], props);
+    const dom = updateDomProperties(domElement, [], props);
 
-        const children = props.children || [];
-        const childInstances = children.map(instantiate);
-        const childDoms = childInstances.map(childInstance => childInstance.dom);
-        childDoms.forEach(childDom => dom.appendChild(childDom));
+    const children = props.children || [];
+    const childInstances = children.map(instantiate);
+    const childDoms = childInstances.map(childInstance => childInstance.dom);
+    childDoms.forEach(childDom => dom.appendChild(childDom));
 
-        const instance = {
-            dom,
-            element,
-            childInstances,
-        };
-        return instance;
-    }
+    const instance = {
+      dom,
+      element,
+      childInstances
+    };
+    return instance;
+  }
 
-    const isClassElement = OwnReactComponent.isPrototypeOf(type);
-    if (isClassElement) {
-        // create instance of a component
-        const instance = {};
-        const publicInstance = createPublicInstance(element, instance);
-        const childElement = publicInstance.render();
-        const childInstance = instantiate(childElement);
-        const dom = childInstance.dom;
+  const isClassElement = Object.prototype.isPrototypeOf.call(
+    OwnReactComponent,
+    type
+  );
+  if (isClassElement) {
+    // create instance of a component
+    const instance = {};
+    const publicInstance = createPublicInstance(element, instance);
+    const childElement = publicInstance.render();
+    const childInstance = instantiate(childElement);
+    const { dom } = childInstance;
 
-        Object.assign(instance, { 
-            dom,
-            element,
-            childInstance,
-            publicInstance,
-        });
-        
-        return instance;
-    }
+    Object.assign(instance, {
+      dom,
+      element,
+      childInstance,
+      publicInstance
+    });
 
-    console.error(new InvalidTypeError(`Invalid type: ${type}`));
+    return instance;
+  }
+
+  console.error(new InvalidTypeError(`Invalid type: ${type}`));
 }

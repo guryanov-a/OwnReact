@@ -1,28 +1,28 @@
-import createPublicInstance from '../createPublicInstance';
+import createPublicInstance from "../createPublicInstance";
 
 describe("createPublicInstance", () => {
-    test('create public instance of a component', () => {
-        // Arrange
-        const element = {
-            type: class {
-                constructor(props) {
-                    this.props = props;
-                }
-            },
-            props: {
-                name: 'John',
-                surname: 'Doe'
-            }
-        };
-        const internalInstance = {};
+  it("create public instance of a component", () => {
+    expect.hasAssertions();
+    // Arrange
+    const element = {
+      type: class {
+        constructor(props) {
+          this.props = props;
+        }
+      },
+      props: {
+        name: "John",
+        surname: "Doe"
+      }
+    };
+    const internalInstance = {};
 
-        // Act
-        const publicInstance = createPublicInstance(element, internalInstance);
+    // Act
+    const publicInstance = createPublicInstance(element, internalInstance);
 
-        // Assert
-        expect(publicInstance).toBeInstanceOf(element.type);
-        expect(publicInstance.props).toEqual(element.props);
-        expect(publicInstance.__internalInstance).toBe(internalInstance);
-    });
-
+    // Assert
+    expect(publicInstance).toBeInstanceOf(element.type);
+    expect(publicInstance.props).toStrictEqual(element.props);
+    expect(publicInstance.__internalInstance).toBe(internalInstance);
+  });
 });

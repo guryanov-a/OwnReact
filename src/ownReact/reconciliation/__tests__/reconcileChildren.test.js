@@ -4,38 +4,41 @@ import { reconcile } from "../reconcile";
 jest.mock("../reconcile");
 
 describe("reconcileChildren", () => {
-    it("reconciles children", () => {
-        const instance = {
-            dom: document.createElement("div"),
-            childInstances: []
-        };
-        const element = {
-            type: 'div',
+  it("reconciles children", () => {
+    expect.hasAssertions();
+    const instance = {
+      dom: document.createElement("div"),
+      childInstances: []
+    };
+    const element = {
+      type: "div",
+      props: {
+        children: [
+          {
+            type: "div",
             props: {
-                children: [
-                    {
-                        type: "div",
-                        props: {
-                            children: []
-                        }
-                    },
-                    {
-                        type: "div",
-                        props: {
-                            children: []
-                        }
-                    }
-                ]
+              children: []
             }
-        };
-        const expectedChildInstances = [
-            { dom: document.createElement("div") },
-            { dom: document.createElement("div") }
-        ];
+          },
+          {
+            type: "div",
+            props: {
+              children: []
+            }
+          }
+        ]
+      }
+    };
+    const expectedChildInstances = [
+      { dom: document.createElement("div") },
+      { dom: document.createElement("div") }
+    ];
 
-        reconcile.mockImplementation(() => ({ dom: document.createElement("div") }));
-        
-        const newChildInstances = reconcileChildren(instance, element);
-        expect(newChildInstances).toStrictEqual(expectedChildInstances);
-    });
+    reconcile.mockImplementation(() => ({
+      dom: document.createElement("div")
+    }));
+
+    const newChildInstances = reconcileChildren(instance, element);
+    expect(newChildInstances).toStrictEqual(expectedChildInstances);
+  });
 });

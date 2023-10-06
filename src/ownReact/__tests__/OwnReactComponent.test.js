@@ -3,87 +3,100 @@ import { updateComponent } from "../updateComponent";
 
 jest.mock("../updateComponent");
 
-describe("OwnReactComponent", () => {
-  test('constructor', () => {
+describe("ownReactComponent", () => {
+  it("constructor", () => {
+    expect.hasAssertions();
     const component = new OwnReactComponent();
-    expect(component.props).toEqual({});
-    expect(component.state).toEqual({});
+    expect(component.props).toStrictEqual({});
+    expect(component.state).toStrictEqual({});
   });
 
-  test('setState', () => {
+  it("setState", () => {
+    expect.hasAssertions();
     const component = new OwnReactComponent();
     component.__internalInstance = {
       dom: {
-        tagName: 'updatedDom'
+        tagName: "updatedDom"
       },
       element,
-      childInstances: [
-        'updatedChildInstances'
-      ],
+      childInstances: ["updatedChildInstances"]
     };
     const element = {
-      type: 'div',
+      type: "div",
       props: {
-        id: 'test'
+        id: "test"
       }
     };
 
-    updateComponent.mockImplementation((internalInstance) => {
+    updateComponent.mockImplementation(internalInstance => {
       internalInstance.dom = {
-        tagName: 'updatedDom'
+        tagName: "updatedDom"
       };
       internalInstance.element = element;
-      internalInstance.childInstances = [
-        'updatedChildInstances'
-      ];
+      internalInstance.childInstances = ["updatedChildInstances"];
     });
 
-    component.setState({ test: 'test' });
-    expect(component.state).toEqual({test: 'test'});
+    component.setState({ test: "test" });
+    expect(component.state).toStrictEqual({ test: "test" });
     expect(updateComponent).toHaveBeenCalledWith(component.__internalInstance);
   });
 
-  describe('createElement', () => {
-    test('object child', () => {
-      const element = OwnReactComponent.createElement('div', { id: 'test' }, { type: 'div', props: { id: 'test' } });
-      expect(element).toEqual({
-        type: 'div',
+  describe("createElement", () => {
+    it("object child", () => {
+      expect.hasAssertions();
+      const element = OwnReactComponent.createElement(
+        "div",
+        { id: "test" },
+        { type: "div", props: { id: "test" } }
+      );
+      expect(element).toStrictEqual({
+        type: "div",
         props: {
-          id: 'test',
-          children: [{
-            type: 'div',
-            props: {
-              id: 'test'
+          id: "test",
+          children: [
+            {
+              type: "div",
+              props: {
+                id: "test"
+              }
             }
-          }]
-        }
-      });
-    });
-    
-    test('string', () => {
-      const element = OwnReactComponent.createElement('div', { id: 'test' }, 'Hello world!');
-      expect(element).toEqual({
-        type: 'div',
-        props: {
-          id: 'test',
-          children: [{
-            type: 'TEXT ELEMENT',
-            props: {
-              nodeValue: 'Hello world!'
-            }
-          }]
+          ]
         }
       });
     });
 
-    test('InvalidChildError', () => {
-      console.error = jest.fn();
-      const element = OwnReactComponent.createElement('div', { id: 'test' }, 1);
-
-      expect(element).toEqual({
-        type: 'div',
+    it("string", () => {
+      expect.hasAssertions();
+      const element = OwnReactComponent.createElement(
+        "div",
+        { id: "test" },
+        "Hello world!"
+      );
+      expect(element).toStrictEqual({
+        type: "div",
         props: {
-          id: 'test',
+          id: "test",
+          children: [
+            {
+              type: "TEXT ELEMENT",
+              props: {
+                nodeValue: "Hello world!"
+              }
+            }
+          ]
+        }
+      });
+    });
+
+    it("invalidChildError", () => {
+      expect.hasAssertions();
+      jest.spyOn(console, "error").mockImplementation();
+      const element = OwnReactComponent.createElement("div", { id: "test" }, 1);
+
+      expect(element).toStrictEqual({
+        type: "div",
+        props: {
+          id: "test",
           children: []
         }
       });

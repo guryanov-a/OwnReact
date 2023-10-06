@@ -4,16 +4,16 @@
   "scripts": {
     "dev": "webpack-dev-server --config ./webpack.config.js --mode development",
     "test": "jest",
-    "lint": "eslint samples/** src/** tests/**"
+    "lint": "eslint samples/**/* src/**/* --fix"
   },
   "keywords": [
     "react"
   ],
   "author": "Gurianov Artem <guryanov.artyom@gmail.com>",
-  "license": "WTFPL",
+  "license": "ISC",
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint -- --fix",
+      "pre-commit": "npm run lint",
       "pre-push": "npm run test"
     }
   },

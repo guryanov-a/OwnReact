@@ -6,122 +6,126 @@ jest.mock("../updateDomProperties");
 jest.mock("../reconcileChildren");
 
 describe("updateInstance", () => {
-    it("should update instance", () => {
-        const initialInstanceChildInsances = [
-            {
-                dom: document.createElement("span"),
-                element: {
-                    type: "span",
-                    props: {
-                        children: [
-                            {
-                                type: "TEXT ELEMENT",
-                                props: {
-                                    nodeValue: "Hello"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        ];
-        const initialInstance = {
-            dom: document.createElement("div"),
-            element: {
-                type: "div",
+  it("should update instance", () => {
+    expect.hasAssertions();
+    const initialInstanceChildInsances = [
+      {
+        dom: document.createElement("span"),
+        element: {
+          type: "span",
+          props: {
+            children: [
+              {
+                type: "TEXT ELEMENT",
                 props: {
-                    children: [
-                        {
-                            type: "span",
-                            props: {
-                                children: [
-                                    {
-                                        type: "TEXT ELEMENT",
-                                        props: {
-                                            nodeValue: "Hello"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
+                  nodeValue: "Hello"
                 }
-            },
-            childInstances: initialInstanceChildInsances,
-        };
-        const element = {
-            type: "div",
-            props: {
-                className: "foo",
+              }
+            ]
+          }
+        }
+      }
+    ];
+    const initialInstance = {
+      dom: document.createElement("div"),
+      element: {
+        type: "div",
+        props: {
+          children: [
+            {
+              type: "span",
+              props: {
                 children: [
-                    {
-                        type: "span",
-                        props: {
-                            children: [
-                                {
-                                    type: "TEXT ELEMENT",
-                                    props: {
-                                        nodeValue: "Hello World"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        };
-
-        const expectedInstanceMainInfo = {
-            dom: document.createElement("div"),
-            element: {
-                type: "div",
-                props: {
-                    className: "foo",
-                    children: [
-                        {
-                            type: "span",
-                            props: {
-                                children: [
-                                    {
-                                        type: "TEXT ELEMENT",
-                                        props: {
-                                            nodeValue: "Hello World"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            },
-        };
-        const expectedChildInstances = [
-            {
-                dom: document.createElement("span"),
-                element: {
-                    type: "span",
+                  {
+                    type: "TEXT ELEMENT",
                     props: {
-                        children: [
-                            {
-                                type: "TEXT ELEMENT",
-                                props: {
-                                    nodeValue: "Hello World"
-                                }
-                            }
-                        ]
+                      nodeValue: "Hello"
                     }
-                }
+                  }
+                ]
+              }
             }
-        ];
-        const expectedInstance = {
-            ...expectedInstanceMainInfo,
-            childInstances: expectedChildInstances,
-        };
+          ]
+        }
+      },
+      childInstances: initialInstanceChildInsances
+    };
+    const element = {
+      type: "div",
+      props: {
+        className: "foo",
+        children: [
+          {
+            type: "span",
+            props: {
+              children: [
+                {
+                  type: "TEXT ELEMENT",
+                  props: {
+                    nodeValue: "Hello World"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    };
 
-        updateDomProperties.mockImplementation(() => ({ ...expectedInstanceMainInfo, childInstances: initialInstanceChildInsances }));
-        reconcileChildren.mockImplementation(() => expectedChildInstances);
+    const expectedInstanceMainInfo = {
+      dom: document.createElement("div"),
+      element: {
+        type: "div",
+        props: {
+          className: "foo",
+          children: [
+            {
+              type: "span",
+              props: {
+                children: [
+                  {
+                    type: "TEXT ELEMENT",
+                    props: {
+                      nodeValue: "Hello World"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    };
+    const expectedChildInstances = [
+      {
+        dom: document.createElement("span"),
+        element: {
+          type: "span",
+          props: {
+            children: [
+              {
+                type: "TEXT ELEMENT",
+                props: {
+                  nodeValue: "Hello World"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ];
+    const expectedInstance = {
+      ...expectedInstanceMainInfo,
+      childInstances: expectedChildInstances
+    };
 
-        const nextInstance = updateInstance(initialInstance, element);
-        expect(nextInstance).toEqual(expectedInstance);
-    });
+    updateDomProperties.mockImplementation(() => ({
+      ...expectedInstanceMainInfo,
+      childInstances: initialInstanceChildInsances
+    }));
+    reconcileChildren.mockImplementation(() => expectedChildInstances);
+
+    const nextInstance = updateInstance(initialInstance, element);
+    expect(nextInstance).toStrictEqual(expectedInstance);
+  });
 });

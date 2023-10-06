@@ -4,10 +4,10 @@
  * @returns {null}
  * @example
  * const nextInstance = removeInstance(instance);
- * 
+ *
  * @todo
  * - [ ] test
- * 
+ *
  * @see https://reactjs.org/docs/reconciliation.html#recursing-on-children
  * @see https://reactjs.org/docs/react-component.html#componentwillunmount
  * @see https://reactjs.org/docs/react-component.html#render
@@ -20,7 +20,9 @@
  * @see https://reactjs.org/docs/reconciliation.html#recursing-on-children
  */
 export function removeInstance(container, instance) {
-    instance.publicInstance && instance.publicInstance.componentWillUnmount && instance.publicInstance.componentWillUnmount();
-    container.removeChild(instance.dom);
-    return null;
+  instance.publicInstance &&
+    instance.publicInstance.componentWillUnmount &&
+    instance.publicInstance.componentWillUnmount();
+  container.removeChild(instance.dom);
+  return null;
 }
