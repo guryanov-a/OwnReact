@@ -1,6 +1,6 @@
 import { reconcile } from "./reconcile";
 
-export const updateInstance = (container, element) => {
+export const replaceInstance = (container, element) => {
   const newInstance = reconcile(container, null, element);
   return newInstance;
 };

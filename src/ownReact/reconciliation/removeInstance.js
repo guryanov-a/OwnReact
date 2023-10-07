@@ -22,7 +22,9 @@
 export function removeInstance(container, instance) {
   instance.publicInstance &&
     instance.publicInstance.componentWillUnmount &&
+    typeof instance.publicInstance.componentWillUnmount === "function" &&
     instance.publicInstance.componentWillUnmount();
+
   container.removeChild(instance.dom);
   return null;
 }

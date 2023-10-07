@@ -39,7 +39,7 @@ export function reconcile(container, currentInstance, element) {
 
   // choosing what to do with the instance
   if (currentInstance === null) {
-    // initial render
+    // initialize instance
     return createInstance(container, element);
   }
 

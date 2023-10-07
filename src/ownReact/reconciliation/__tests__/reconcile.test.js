@@ -96,7 +96,17 @@ describe("reconcile", () => {
       element: {
         type: "span"
       },
-      childInstances: ["updatedChildInstances"]
+      childInstances: [
+        {
+          dom: {
+            tagName: "updatedChildDom"
+          },
+          element: {
+            type: "span"
+          },
+          childInstances: []
+        }
+      ]
     };
 
     updateInstance.mockImplementation(() => {
@@ -110,7 +120,7 @@ describe("reconcile", () => {
     const prevInstance = {
       dom: {},
       element: {
-        type: "div"
+        type: "span"
       },
       childInstances: []
     };

@@ -6,46 +6,75 @@ jest.mock("../reconcile");
 describe("updateComponentInstance", () => {
   it("updateComponentInstance", () => {
     expect.hasAssertions();
-    const currentInstance = {
-      publicInstance: {
-        props: {
-          className: "test"
-        },
-        render: jest.fn()
-      },
-      dom: {}
-    };
-    const element = {
-      props: {
-        className: "testElement"
-      }
-    };
     const expectedChildElement = {
       type: "div",
       props: {
-        className: "expectedTest"
+        className: "initialValue"
       }
     };
-    const expectedNextInstance = {
+    class Component {
+      constructor(props) {
+        this.props = props;
+      }
+      render() {
+        return expectedChildElement;
+      }
+    }
+    const publicInstance = new Component({
+      className: "test"
+    });
+    const currentChildInstance = {
+      dom: {},
+      element: {
+        props: {
+          className: "initialValue"
+        }
+      },
+      childInstances: []
+    };
+    const currentInstance = {
+      publicInstance,
+      dom: {},
+      childInstance: currentChildInstance,
+      element: {
+        props: {
+          componentProp: "componentPropValue"
+        },
+        type: Component
+      }
+    };
+    currentInstance.publicInstance.__internalInstance = currentInstance;
+
+    const element = {
+      props: {
+        className: "expectedValue"
+      }
+    };
+    const expectedNextChildInstance = {
       dom: {},
       element: expectedChildElement,
       childInstances: []
     };
+    const expectedNextInstance = {
+      dom: {},
+      element,
+      childInstance: expectedNextChildInstance,
+      publicInstance: currentInstance.publicInstance
+    };
+    const container = {};
+    jest.spyOn(currentInstance.publicInstance, "render");
+    reconcile.mockImplementation(() => expectedNextChildInstance);
 
-    currentInstance.publicInstance.render.mockImplementation(
-      () => expectedChildElement
-    );
-    reconcile.mockImplementation(() => expectedNextInstance);
+    const result = updateComponentInstance(container, currentInstance, element);
 
-    const result = updateComponentInstance(currentInstance, element);
     expect(currentInstance.publicInstance.props).toStrictEqual(element.props);
     expect(currentInstance.publicInstance.__internalInstance).toStrictEqual(
       expectedNextInstance
     );
     expect(currentInstance.publicInstance.render).toHaveBeenCalledWith();
     expect(reconcile).toHaveBeenCalledWith(
-      currentInstance.dom,
-      currentInstance,
+      container,
+      currentChildInstance,
       expectedChildElement
     );
     expect(result).toStrictEqual(expectedNextInstance);

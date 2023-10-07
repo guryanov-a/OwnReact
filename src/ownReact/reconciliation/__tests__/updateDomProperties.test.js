@@ -3,27 +3,47 @@ import { updateDomProperties } from "../updateDomProperties";
 describe("updateDomProperties", () => {
   it("should update dom properties", () => {
     expect.hasAssertions();
-    const element = {
+    const onClick = () => {};
+    const prevElement = {
+      type: "div",
       props: {
         className: "foo",
         style: {
           color: "red"
-        }
+        },
+        onClick
       }
     };
+
+    const dom = document.createElement("div");
+    dom.className = "foo";
+    dom.style.color = "red";
+    dom.onclick = onClick;
     const instance = {
-      className: "",
-      style: {},
-      element
+      childInstances: [],
+      element: prevElement,
+      dom
     };
 
-    const nextInstance = updateDomProperties(
+    const onMouseOver = () => {};
+    const nextElement = {
+      type: "div",
+      props: {
+        className: "bar",
+        style: {
+          color: "blue"
+        },
+        onMouseOver
+      }
+    };
+
+    const nextDom = updateDomProperties(
       instance.dom,
       instance.element.props,
-      element.props
+      nextElement.props
     );
 
-    expect(nextInstance.className).toBe("foo");
-    expect(nextInstance.style.color).toBe("red");
+    expect(nextDom.className).toBe("bar");
+    expect(nextDom.style.color).toBe("blue");
   });
 });

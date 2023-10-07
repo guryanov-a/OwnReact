@@ -79,13 +79,15 @@ describe("instantiate", () => {
 
   it("instantiate a class component", () => {
     expect.hasAssertions();
-    const MockClassComponent = class MockClassComponent {};
-    jest
-      .spyOn(MockClassComponent.prototype, "render")
-      .mockImplementation(() => ({
-        type: "TEXT ELEMENT",
-        props: { nodeValue: "foo" }
-      }));
+    class MockClassComponent extends OwnReactComponent {
+      render() {
+        return {
+          type: "TEXT ELEMENT",
+          props: { nodeValue: "foo" }
+        };
+      }
+    }
+    jest.spyOn(MockClassComponent.prototype, "render");
     const isPrototypeOfSpy = jest
       .spyOn(OwnReactComponent, "isPrototypeOf")
       .mockReturnValue(true);
