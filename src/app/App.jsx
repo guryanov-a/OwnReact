@@ -33,6 +33,26 @@ export const alphabet = [
 
 let timer;
 
+const updateAlphabetState = state => {
+  const newAlphabet = [...state.alphabet];
+  const randomLength = Math.floor(Math.random() * newAlphabet.length);
+
+  console.log("randomLength", randomLength);
+
+  for (let i = 0; i < randomLength; i += 1) {
+    const randomIndex1 = Math.floor(Math.random() * newAlphabet.length);
+    const randomIndex2 = Math.floor(Math.random() * newAlphabet.length);
+
+    const temp = newAlphabet[randomIndex1];
+    newAlphabet[randomIndex1] = newAlphabet[randomIndex2];
+    newAlphabet[randomIndex2] = temp;
+  }
+
+  return {
+    alphabet: newAlphabet
+  };
+};
+
 /**
  * List with random numbers
  */
@@ -45,22 +65,9 @@ export class App extends OwnReactComponent {
     };
   }
 
-  // randomly changes position of all letters in alphabet
+  // randomly changes position of random number of letters in alphabet
   updateAlphabet() {
-    this.setState(state => {
-      const newAlphabet = [...state.alphabet];
-
-      for (let i = 0; i < newAlphabet.length; i += 1) {
-        const randomIndex = Math.floor(Math.random() * newAlphabet.length);
-        const temp = newAlphabet[i];
-        newAlphabet[i] = newAlphabet[randomIndex];
-        newAlphabet[randomIndex] = temp;
-      }
-
-      return {
-        alphabet: newAlphabet
-      };
-    });
+    this.setState(updateAlphabetState);
   }
 
   componentDidMount() {
