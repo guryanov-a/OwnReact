@@ -11,34 +11,71 @@ describe("ownReactComponent", () => {
     expect(component.state).toStrictEqual({});
   });
 
-  it("setState", () => {
-    expect.hasAssertions();
-    const component = new OwnReactComponent();
-    component.__internalInstance = {
-      dom: {
-        tagName: "updatedDom"
-      },
-      element,
-      childInstances: ["updatedChildInstances"]
-    };
-    const element = {
-      type: "div",
-      props: {
-        id: "test"
-      }
-    };
-
-    updateComponent.mockImplementation(internalInstance => {
-      internalInstance.dom = {
-        tagName: "updatedDom"
+  describe("setState", () => {
+    it("object", () => {
+      expect.hasAssertions();
+      const component = new OwnReactComponent();
+      component.__internalInstance = {
+        dom: {
+          tagName: "updatedDom"
+        },
+        element,
+        childInstances: ["updatedChildInstances"]
       };
-      internalInstance.element = element;
-      internalInstance.childInstances = ["updatedChildInstances"];
+      const element = {
+        type: "div",
+        props: {
+          id: "test"
+        }
+      };
+
+      updateComponent.mockImplementation(internalInstance => {
+        internalInstance.dom = {
+          tagName: "updatedDom"
+        };
+        internalInstance.element = element;
+        internalInstance.childInstances = ["updatedChildInstances"];
+      });
+
+      component.setState({ test: "test" });
+      expect(component.state).toStrictEqual({ test: "test" });
+      expect(updateComponent).toHaveBeenCalledWith(
+        component.__internalInstance
+      );
     });
 
-    component.setState({ test: "test" });
-    expect(component.state).toStrictEqual({ test: "test" });
-    expect(updateComponent).toHaveBeenCalledWith(component.__internalInstance);
+    it("function", () => {
+      expect.hasAssertions();
+      const component = new OwnReactComponent();
+      component.__internalInstance = {
+        dom: {
+          tagName: "updatedDom"
+        },
+        element,
+        childInstances: ["updatedChildInstances"]
+      };
+      component.state = { test: "" };
+      const element = {
+        type: "div",
+        props: {
+          id: "test"
+        }
+      };
+
+      updateComponent.mockImplementation(internalInstance => {
+        internalInstance.dom = {
+          tagName: "updatedDom"
+        };
+        internalInstance.element = element;
+        internalInstance.childInstances = ["updatedChildInstances"];
+      });
+
+      component.setState(prevState => ({ test: prevState.test + "test" }));
+      expect(component.state).toStrictEqual({ test: "test" });
+      expect(updateComponent).toHaveBeenCalledWith(
+        component.__internalInstance
+      );
+    });
   });
 
   describe("createElement", () => {
