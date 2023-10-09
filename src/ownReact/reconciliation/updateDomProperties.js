@@ -10,25 +10,26 @@ export function updateDomProperties(dom, prevProps, nextProps) {
       dom.removeEventListener(eventType, prevProps[name]);
     });
 
-  // Remove attributes
+  // Remove DOM properties
   Object.keys(prevProps)
     .filter(isAttribute)
     .forEach(name => {
       dom[name] = null;
     });
 
-  // Set attributes
-  Object.keys(nextProps)
-    .filter(isAttribute)
-    .forEach(name => {
-      if (name === "style") {
-        Object.keys(nextProps[name]).forEach(styleName => {
-          dom.style[styleName] = nextProps[name][styleName];
-        });
-      } else {
-        dom[name] = nextProps[name];
-      }
-    });
+  // Set DOM properties
+  const domPropertiesToSet = Object.keys(nextProps).filter(isAttribute);
+
+  for (let i = 0; i < domPropertiesToSet.length; i++) {
+    const name = domPropertiesToSet[i];
+    if (name === "style") {
+      Object.keys(nextProps[name]).forEach(styleName => {
+        dom.style[styleName] = nextProps[name][styleName];
+      });
+    } else {
+      dom[name] = nextProps[name];
+    }
+  }
 
   // Add event listeners
   Object.keys(nextProps)
