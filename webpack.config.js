@@ -33,6 +33,7 @@ module.exports = {
   devServer: {
     host: "localhost",
     contentBase: "./public",
-    hot: true
+    hot: true,
+    disableHostCheck: true
   }
 };

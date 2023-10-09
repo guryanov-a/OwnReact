@@ -19,13 +19,11 @@
     },
     "test": {
       "name": "test",
-      "command": "npm run test",
-      "runAtStart": false
+      "command": "npm run test"
     },
     "lint": {
       "name": "lint",
-      "command": "npm run lint",
-      "runAtStart": false
+      "command": "npm run lint"
     }
   }
 }
