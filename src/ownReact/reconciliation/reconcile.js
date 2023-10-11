@@ -3,6 +3,7 @@ import { removeInstance } from "./removeInstance";
 import { updateInstance } from "./updateInstance";
 import { replaceInstance } from "./replaceInstance";
 import { updateComponentInstance } from "./updateComponentInstance";
+import { updateTextInstance } from "./updateTextInstance";
 import { OwnReactComponent } from "../OwnReactComponent";
 
 export class UnexpectedError extends Error {}
@@ -63,6 +64,10 @@ export function reconcile(container, currentInstance, element) {
   if (currentInstance.element.type !== element.type) {
     // replace instance in case of major changes
     return replaceInstance(container, element);
+  }
+
+  if (element.type === "TEXT ELEMENT") {
+    return updateTextInstance(currentInstance, element);
   }
 
   if (typeof element.type === "string") {

@@ -31,13 +31,9 @@ export const alphabet = [
   "Z"
 ];
 
-let timer;
-
 const updateAlphabetState = state => {
   const newAlphabet = [...state.alphabet];
   const randomLength = Math.floor(Math.random() * newAlphabet.length);
-
-  console.log("randomLength", randomLength);
 
   for (let i = 0; i < randomLength; i += 1) {
     const randomIndex1 = Math.floor(Math.random() * newAlphabet.length);
@@ -63,25 +59,13 @@ export class App extends OwnReactComponent {
     this.state = {
       alphabet
     };
+
+    this.handleClick = this.handleClick.bind(this);
   }
 
-  // randomly changes position of random number of letters in alphabet
-  updateAlphabet() {
+  // randomly changes position of random number of letters in the alphabet
+  handleClick() {
     this.setState(updateAlphabetState);
-  }
-
-  componentDidMount() {
-    timer = setInterval(() => {
-      this.updateAlphabet();
-    }, 5000);
-
-    this.setState({
-      alphabet
-    });
-  }
-
-  componentWillUnmount() {
-    clearInterval(timer);
   }
 
   render() {
@@ -90,6 +74,11 @@ export class App extends OwnReactComponent {
       return <ListItem key={letter}>{letter}</ListItem>;
     });
 
-    return <List>{listItems}</List>;
+    return (
+      <div>
+        <button onClick={this.handleClick}>Update</button>
+        <List>{listItems}</List>
+      </div>
+    );
   }
 }

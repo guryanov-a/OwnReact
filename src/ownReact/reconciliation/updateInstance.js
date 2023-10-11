@@ -10,15 +10,7 @@ import { reconcileChildren } from "./reconcileChildren.js";
  * const nextInstance = updateInstance(instance, element);
  */
 export function updateInstance(instance, element) {
-  const isTheSameTextElement =
-    instance.element.type === "TEXT ELEMENT" &&
-    element.type === "TEXT ELEMENT" &&
-    instance.element.props.nodeValue === element.props.nodeValue;
-
-  if (!isTheSameTextElement) {
-    updateDomProperties(instance.dom, instance.element.props, element.props);
-  }
-
+  updateDomProperties(instance.dom, instance.element.props, element.props);
   instance.childInstances = reconcileChildren(instance, element);
   instance.element = element;
   return instance;
