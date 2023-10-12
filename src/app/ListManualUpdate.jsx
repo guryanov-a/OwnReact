@@ -103,7 +103,7 @@ export class ListManualUpdate extends OwnReactComponent {
       <div>
         <List>{listItems}</List>
         <div>
-          <input onChange={this.handleFilterChange} type="text" />
+          <input onInput={this.handleFilterChange} type="text" />
         </div>
         <div>
           <button
